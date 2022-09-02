@@ -196,7 +196,7 @@ bool fill_topo_masks_x2apic(struct topology* topo) {
 uint32_t max_apic_id_size(uint32_t** cache_id_apic, struct topology* topo) {
   uint32_t max = 0;
 
-  for(int i=0; i < topo->cach->max_cache_level; i++) {
+  for(int i=0; i < topo->cpu_cache->max_cache_level; i++) {
     for(int j=0; j < topo->total_cores; j++) {
       if(cache_id_apic[j][i] > max) max = cache_id_apic[j][i];
     }
@@ -234,7 +234,7 @@ bool build_topo_from_apic(uint32_t* apic_pkg, uint32_t* apic_smt, uint32_t** cac
   topo->physical_cores = topo->logical_cores / topo->smt_available;
 
   // Cache topology
-  for(int i=0; i < topo->cach->max_cache_level; i++) {
+  for(int i=0; i < topo->cpu_cache->max_cache_level; i++) {
     num_caches = 0;
     memset(apic_id, 0, sizeof(uint32_t) * size);
 
@@ -245,7 +245,7 @@ bool build_topo_from_apic(uint32_t* apic_pkg, uint32_t* apic_smt, uint32_t** cac
       if(apic_id[c] > 0) num_caches++;
     }
 
-    topo->cach->cach_arr[i]->num_caches = num_caches;
+    topo->cpu_cache->cach_arr[i]->num_caches = num_caches;
   }
 
   free(sockets);
@@ -261,7 +261,7 @@ void get_cache_topology_from_apic(struct topology* topo) {
   uint32_t ecx = 0;
   uint32_t edx = 0;
 
-  for(int i=0; i < topo->cach->max_cache_level; i++) {
+  for(int i=0; i < topo->cpu_cache->max_cache_level; i++) {
     eax = 0x00000004;
     ecx = i;
 
@@ -368,11 +368,11 @@ bool get_topology_from_apic(struct cpuInfo* cpu, struct topology* topo) {
   }
 
   for(int i=0; i < topo->total_cores; i++) {
-    cache_smt_id_apic[i] = emalloc(sizeof(uint32_t) * (topo->cach->max_cache_level));
-    cache_id_apic[i] = emalloc(sizeof(uint32_t) * (topo->cach->max_cache_level));
+    cache_smt_id_apic[i] = emalloc(sizeof(uint32_t) * (topo->cpu_cache->max_cache_level));
+    cache_id_apic[i] = emalloc(sizeof(uint32_t) * (topo->cpu_cache->max_cache_level));
   }
-  topo->apic->cache_select_mask = emalloc(sizeof(uint32_t) * (topo->cach->max_cache_level));
-  topo->apic->cache_id_apic = emalloc(sizeof(uint32_t) * (topo->cach->max_cache_level));
+  topo->apic->cache_select_mask = emalloc(sizeof(uint32_t) * (topo->cpu_cache->max_cache_level));
+  topo->apic->cache_id_apic = emalloc(sizeof(uint32_t) * (topo->cpu_cache->max_cache_level));
 
   if(x2apic_id) {
     if(!fill_topo_masks_x2apic(topo))
@@ -395,15 +395,15 @@ bool get_topology_from_apic(struct cpuInfo* cpu, struct topology* topo) {
     apic_core[i] = (apic_id & topo->apic->core_mask) >> topo->apic->smt_mask_width;
     apic_smt[i] = apic_id & topo->apic->smt_mask;
 
-    for(int c=0; c < topo->cach->max_cache_level; c++) {
+    for(int c=0; c < topo->cpu_cache->max_cache_level; c++) {
       cache_smt_id_apic[i][c] = apic_id & topo->apic->cache_select_mask[c];
       cache_id_apic[i][c] = apic_id & (-1 ^ topo->apic->cache_select_mask[c]);
     }
   }
 
   /* DEBUG
-  for(int i=0; i < topo->cach->max_cache_level; i++) {
-    printf("[CACH %1d]", i);
+  for(int i=0; i < topo->cpu_cache->max_cache_level; i++) {
+    printf("[cpu_cache %1d]", i);
     for(int j=0; j < topo->total_cores; j++)
       printf("[%03d]", cache_id_apic[j][i]);
     printf("\n");

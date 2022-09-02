@@ -12,41 +12,41 @@
 #include "../common/global.h"
 
 struct cache* get_cache_info(struct cpuInfo* cpu) {
-  struct cache* cach = emalloc(sizeof(struct cache));
-  init_cache_struct(cach);
+  struct cache* cpu_cache = emalloc(sizeof(struct cache));
+  init_cache_struct(cpu_cache);
 
-  cach->L1i->size = get_l1i_cache_size(0);
-  cach->L1d->size = get_l1d_cache_size(0);
-  cach->L2->size = get_l2_cache_size(0);
-  cach->L3->size = get_l3_cache_size(0);
+  cpu_cache->L1i->size = get_l1i_cache_size(0);
+  cpu_cache->L1d->size = get_l1d_cache_size(0);
+  cpu_cache->L2->size = get_l2_cache_size(0);
+  cpu_cache->L3->size = get_l3_cache_size(0);
 
-  if(cach->L1i->size > 0) {
-    cach->L1i->exists = true;
-    cach->L1i->num_caches = get_num_caches_by_level(cpu, 0);
-    cach->max_cache_level = 1;
+  if(cpu_cache->L1i->size > 0) {
+    cpu_cache->L1i->exists = true;
+    cpu_cache->L1i->num_caches = get_num_caches_by_level(cpu, 0);
+    cpu_cache->max_cache_level = 1;
   }
-  if(cach->L1d->size > 0) {
-    cach->L1d->exists = true;
-    cach->L1d->num_caches = get_num_caches_by_level(cpu, 1);
-    cach->max_cache_level = 2;
+  if(cpu_cache->L1d->size > 0) {
+    cpu_cache->L1d->exists = true;
+    cpu_cache->L1d->num_caches = get_num_caches_by_level(cpu, 1);
+    cpu_cache->max_cache_level = 2;
   }
-  if(cach->L2->size > 0) {
-    cach->L2->exists = true;
-    cach->L2->num_caches = get_num_caches_by_level(cpu, 2);
-    cach->max_cache_level = 3;
+  if(cpu_cache->L2->size > 0) {
+    cpu_cache->L2->exists = true;
+    cpu_cache->L2->num_caches = get_num_caches_by_level(cpu, 2);
+    cpu_cache->max_cache_level = 3;
   }
-  if(cach->L3->size > 0) {
-    cach->L3->exists = true;
-    cach->L3->num_caches = get_num_caches_by_level(cpu, 3);
-    cach->max_cache_level = 4;
+  if(cpu_cache->L3->size > 0) {
+    cpu_cache->L3->exists = true;
+    cpu_cache->L3->num_caches = get_num_caches_by_level(cpu, 3);
+    cpu_cache->max_cache_level = 4;
   }
 
-  return cach;
+  return cpu_cache;
 }
 
-struct topology* get_topology_info(struct cache* cach) {
+struct topology* get_topology_info(struct cache* cpu_cache) {
   struct topology* topo = emalloc(sizeof(struct topology));
-  init_topology_struct(topo, cach);
+  init_topology_struct(topo, cpu_cache);
 
   // 1. Total cores detection
   if((topo->total_cores = sysconf(_SC_NPROCESSORS_ONLN)) == -1) {
@@ -176,8 +176,8 @@ struct cpuInfo* get_cpu_info() {
   cpu->pvr = mfpvr();
   cpu->arch = get_cpu_uarch(cpu);
   cpu->freq = get_frequency_info();
-  cpu->topo = get_topology_info(cpu->cach);
-  cpu->cach = get_cache_info(cpu);
+  cpu->topo = get_topology_info(cpu->cpu_cache);
+  cpu->cpu_cache = get_cache_info(cpu);
   feat->altivec = has_altivec(cpu->arch);
   cpu->peak_performance = get_peak_performance(cpu, cpu->topo, get_freq(cpu->freq));
 

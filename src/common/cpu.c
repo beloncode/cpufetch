@@ -124,23 +124,23 @@ char* get_str_cache(int32_t cache_size, int32_t num_caches) {
     return get_str_cache_one(cache_size);
 }
 
-char* get_str_l1i(struct cache* cach) {
-  return get_str_cache(cach->L1i->size, cach->L1i->num_caches);
+char* get_str_l1i(struct cache* cpu_cache) {
+  return get_str_cache(cpu_cache->L1i->size, cpu_cache->L1i->num_caches);
 }
 
-char* get_str_l1d(struct cache* cach) {
-  return get_str_cache(cach->L1d->size, cach->L1d->num_caches);
+char* get_str_l1d(struct cache* cpu_cache) {
+  return get_str_cache(cpu_cache->L1d->size, cpu_cache->L1d->num_caches);
 }
 
-char* get_str_l2(struct cache* cach) {
-  assert(cach->L2->exists);
-  return get_str_cache(cach->L2->size, cach->L2->num_caches);
+char* get_str_l2(struct cache* cpu_cache) {
+  assert(cpu_cache->L2->exists);
+  return get_str_cache(cpu_cache->L2->size, cpu_cache->L2->num_caches);
 }
 
-char* get_str_l3(struct cache* cach) {
-  if(!cach->L3->exists)
+char* get_str_l3(struct cache* cpu_cache) {
+  if(!cpu_cache->L3->exists)
     return NULL;
-  return get_str_cache(cach->L3->size, cach->L3->num_caches);
+  return get_str_cache(cpu_cache->L3->size, cpu_cache->L3->num_caches);
 }
 
 char* get_str_freq(struct frequency* freq) {
@@ -184,9 +184,9 @@ char* get_str_peak_performance(int64_t flops) {
   return str;
 }
 
-void init_topology_struct(struct topology* topo, struct cache* cach) {
+void init_topology_struct(struct topology* topo, struct cache* cpu_cache) {
   topo->total_cores = 0;
-  topo->cach = cach;
+  topo->cpu_cache = cpu_cache;
 #if defined(ARCH_X86) || defined(ARCH_PPC)
   topo->physical_cores = 0;
   topo->logical_cores = 0;
@@ -199,29 +199,29 @@ void init_topology_struct(struct topology* topo, struct cache* cach) {
 #endif
 }
 
-void init_cache_struct(struct cache* cach) {
-  cach->L1i = emalloc(sizeof(struct cach));
-  cach->L1d = emalloc(sizeof(struct cach));
-  cach->L2 = emalloc(sizeof(struct cach));
-  cach->L3 = emalloc(sizeof(struct cach));
+void init_cache_struct(struct cache* cpu_cache) {
+  cpu_cache->L1i = emalloc(sizeof(struct cpu_cache));
+  cpu_cache->L1d = emalloc(sizeof(struct cpu_cache));
+  cpu_cache->L2 = emalloc(sizeof(struct cpu_cache));
+  cpu_cache->L3 = emalloc(sizeof(struct cpu_cache));
 
-  cach->cach_arr = emalloc(sizeof(struct cach*) * 4);
-  cach->cach_arr[0] = cach->L1i;
-  cach->cach_arr[1] = cach->L1d;
-  cach->cach_arr[2] = cach->L2;
-  cach->cach_arr[3] = cach->L3;
+  cpu_cache->cach_arr = emalloc(sizeof(struct cpu_cache*) * 4);
+  cpu_cache->cach_arr[0] = cpu_cache->L1i;
+  cpu_cache->cach_arr[1] = cpu_cache->L1d;
+  cpu_cache->cach_arr[2] = cpu_cache->L2;
+  cpu_cache->cach_arr[3] = cpu_cache->L3;
 
-  cach->max_cache_level = 0;
-  cach->L1i->exists = false;
-  cach->L1d->exists = false;
-  cach->L2->exists = false;
-  cach->L3->exists = false;
+  cpu_cache->max_cache_level = 0;
+  cpu_cache->L1i->exists = false;
+  cpu_cache->L1d->exists = false;
+  cpu_cache->L2->exists = false;
+  cpu_cache->L3->exists = false;
 }
 
-void free_cache_struct(struct cache* cach) {
-  for(int i=0; i < 4; i++) free(cach->cach_arr[i]);
-  free(cach->cach_arr);
-  free(cach);
+void free_cache_struct(struct cache* cpu_cache) {
+  for(int i=0; i < 4; i++) free(cpu_cache->cach_arr[i]);
+  free(cpu_cache->cach_arr);
+  free(cpu_cache);
 }
 
 void free_freq_struct(struct frequency* freq) {

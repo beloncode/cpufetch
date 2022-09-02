@@ -51,7 +51,7 @@ struct hypervisor {
   VENDOR hv_vendor;
 };
 
-struct cach {
+struct cpu_cache {
   int32_t size;
   uint8_t num_caches;
   bool exists;
@@ -59,18 +59,18 @@ struct cach {
 };
 
 struct cache {
-  struct cach* L1i;
-  struct cach* L1d;
-  struct cach* L2;
-  struct cach* L3;
-  struct cach** cach_arr;
+  struct cpu_cache* L1i;
+  struct cpu_cache* L1d;
+  struct cpu_cache* L2;
+  struct cpu_cache* L3;
+  struct cpu_cache** cach_arr;
 
   uint8_t max_cache_level;
 };
 
 struct topology {
   int32_t total_cores;  
-  struct cache* cach;
+  struct cache* cpu_cache;
 #if defined(ARCH_X86) || defined(ARCH_PPC)
   int32_t physical_cores;
   int32_t logical_cores;
@@ -114,7 +114,7 @@ struct cpuInfo {
   struct uarch* arch;
   struct hypervisor* hv;
   struct frequency* freq;
-  struct cache* cach;
+  struct cache* cpu_cache;
   struct topology* topo;
   struct features* feat;
   int64_t peak_performance;
@@ -159,17 +159,17 @@ int64_t get_freq(struct frequency* freq);
 
 char* get_str_aes(struct cpuInfo* cpu);
 char* get_str_sha(struct cpuInfo* cpu);
-char* get_str_l1i(struct cache* cach);
-char* get_str_l1d(struct cache* cach);
-char* get_str_l2(struct cache* cach);
-char* get_str_l3(struct cache* cach);
+char* get_str_l1i(struct cache* cpu_cache);
+char* get_str_l1d(struct cache* cpu_cache);
+char* get_str_l2(struct cache* cpu_cache);
+char* get_str_l3(struct cache* cpu_cache);
 char* get_str_freq(struct frequency* freq);
 char* get_str_peak_performance(int64_t flops);
 
-void init_topology_struct(struct topology* topo, struct cache* cach);
-void init_cache_struct(struct cache* cach);
+void init_topology_struct(struct topology* topo, struct cache* cpu_cache);
+void init_cache_struct(struct cache* cpu_cache);
 
-void free_cache_struct(struct cache* cach);
+void free_cache_struct(struct cache* cpu_cache);
 void free_freq_struct(struct frequency* freq);
 void free_cpuinfo_struct(struct cpuInfo* cpu);
 

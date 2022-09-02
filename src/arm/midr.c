@@ -23,17 +23,17 @@ bool cores_are_equal(int c1pos, int c2pos, uint32_t* midr_array, int32_t* freq_a
 }
 
 struct cache* get_cache_info(struct cpuInfo* cpu) {
-  struct cache* cach = emalloc(sizeof(struct cache));
-  init_cache_struct(cach);
+  struct cache* cpu_cache = emalloc(sizeof(struct cache));
+  init_cache_struct(cpu_cache);
 
-  cach->max_cache_level = 2;
-  for(int i=0; i < cach->max_cache_level + 1; i++) {
-    cach->cach_arr[i]->exists = true;
-    cach->cach_arr[i]->num_caches = 1;
-    cach->cach_arr[i]->size = 0;
+  cpu_cache->max_cache_level = 2;
+  for(int i=0; i < cpu_cache->max_cache_level + 1; i++) {
+    cpu_cache->cach_arr[i]->exists = true;
+    cpu_cache->cach_arr[i]->num_caches = 1;
+    cpu_cache->cach_arr[i]->size = 0;
   }
 
-  return cach;
+  return cpu_cache;
 }
 
 struct frequency* get_frequency_info(uint32_t core) {
@@ -45,9 +45,9 @@ struct frequency* get_frequency_info(uint32_t core) {
   return freq;
 }
 
-struct topology* get_topology_info(struct cpuInfo* cpu, struct cache* cach, uint32_t* midr_array, int32_t* freq_array, int socket_idx, int ncores) {
+struct topology* get_topology_info(struct cpuInfo* cpu, struct cache* cpu_cache, uint32_t* midr_array, int32_t* freq_array, int socket_idx, int ncores) {
   struct topology* topo = emalloc(sizeof(struct topology));
-  init_topology_struct(topo, cach);
+  init_topology_struct(topo, cpu_cache);
 
   int sockets_seen = 0;
   int first_core_idx = 0;
@@ -224,8 +224,8 @@ struct cpuInfo* get_cpu_info_linux(struct cpuInfo* cpu) {
 
     ptr->feat = get_features_info();
     ptr->freq = get_frequency_info(midr_idx);
-    ptr->cach = get_cache_info(ptr);
-    ptr->topo = get_topology_info(ptr, ptr->cach, midr_array, freq_array, i, ncores);
+    ptr->cpu_cache = get_cache_info(ptr);
+    ptr->topo = get_topology_info(ptr, ptr->cpu_cache, midr_array, freq_array, i, ncores);
   }
 
   cpu->num_cpus = sockets;
@@ -244,10 +244,10 @@ void fill_cpu_info_firestorm_icestorm(struct cpuInfo* cpu, uint32_t pcores, uint
 
   ice->midr = MIDR_APPLE_M1_ICESTORM;
   ice->arch = get_uarch_from_midr(ice->midr, ice);
-  ice->cach = get_cache_info(ice);
+  ice->cpu_cache = get_cache_info(ice);
   ice->feat = get_features_info();
   ice->topo = malloc(sizeof(struct topology));
-  ice->topo->cach = ice->cach;
+  ice->topo->cpu_cache = ice->cpu_cache;
   ice->topo->total_cores = ecores;
   ice->freq = malloc(sizeof(struct frequency));
   ice->freq->base = UNKNOWN_DATA;
@@ -260,10 +260,10 @@ void fill_cpu_info_firestorm_icestorm(struct cpuInfo* cpu, uint32_t pcores, uint
   struct cpuInfo* fire = ice->next_cpu;
   fire->midr = MIDR_APPLE_M1_FIRESTORM;
   fire->arch = get_uarch_from_midr(fire->midr, fire);
-  fire->cach = get_cache_info(fire);
+  fire->cpu_cache = get_cache_info(fire);
   fire->feat = get_features_info();
   fire->topo = malloc(sizeof(struct topology));
-  fire->topo->cach = fire->cach;
+  fire->topo->cpu_cache = fire->cpu_cache;
   fire->topo->total_cores = pcores;
   fire->freq = malloc(sizeof(struct frequency));
   fire->freq->base = UNKNOWN_DATA;
@@ -287,13 +287,20 @@ struct cpuInfo* get_cpu_info_mach(struct cpuInfo* cpu) {
       fill_cpu_info_firestorm_icestorm(cpu, 4, 4);
     }
     else if(cpu_subfamily == CPUSUBFAMILY_ARM_HS || cpu_subfamily == CPUSUBFAMILY_ARM_HC_HD) {
-      // Apple M1 Pro/Max. Detect number of cores
+      // Apple M1 Pro/Max/Ultra. Detect number of cores
       uint32_t physicalcpu = get_sys_info_by_name("hw.physicalcpu");
-      if(physicalcpu < 8 || physicalcpu > 10) {
-        printBug("Found invalid physicalcpu: 0x%.8X", physicalcpu);
+      if(physicalcpu == 20) {
+        // M1 Ultra
+        fill_cpu_info_firestorm_icestorm(cpu, 16, 4);
+      }
+      else if(physicalcpu == 8 || physicalcpu == 10) {
+        // M1 Pro/Max
+        fill_cpu_info_firestorm_icestorm(cpu, physicalcpu-2, 2);
+      }
+      else {
+        printBug("Found invalid physical cpu number: %d", physicalcpu);
         return NULL;
       }
-      fill_cpu_info_firestorm_icestorm(cpu, physicalcpu-2, 2);
     }
     else {
       printBug("Found invalid cpu_subfamily: 0x%.8X", cpu_subfamily);

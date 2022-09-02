@@ -521,11 +521,11 @@ bool print_cpufetch_x86(struct cpuInfo* cpu, STYLE s, struct color** cs, struct 
     n_cores_dual = get_str_topology(cpu, cpu->topo, true);
   }
 
-  if(cpu->cach != NULL) {
-    l1i = get_str_l1i(cpu->cach);
-    l1d = get_str_l1d(cpu->cach);
-    l2 = get_str_l2(cpu->cach);
-    l3 = get_str_l3(cpu->cach);
+  if(cpu->cpu_cache != NULL) {
+    l1i = get_str_l1i(cpu->cpu_cache);
+    l1d = get_str_l1d(cpu->cpu_cache);
+    l2 = get_str_l2(cpu->cpu_cache);
+    l3 = get_str_l3(cpu->cpu_cache);
   }
 
   // Step 2. Set attributes
@@ -587,7 +587,7 @@ bool print_cpufetch_x86(struct cpuInfo* cpu, STYLE s, struct color** cs, struct 
   free(art);
 
   if(cs != NULL) free_colors_struct(cs);
-  if(cpu->cach != NULL) free_cache_struct(cpu->cach);
+  if(cpu->cpu_cache != NULL) free_cache_struct(cpu->cpu_cache);
   if(cpu->topo != NULL) free_topo_struct(cpu->topo);
   free_freq_struct(cpu->freq);
   free_cpuinfo_struct(cpu);
@@ -612,10 +612,10 @@ bool print_cpufetch_ppc(struct cpuInfo* cpu, STYLE s, struct color** cs, struct 
   char* n_cores_dual = get_str_topology(cpu->topo, true);
   char* altivec = get_str_altivec(cpu);
 
-  char* l1i = get_str_l1i(cpu->cach);
-  char* l1d = get_str_l1d(cpu->cach);
-  char* l2 = get_str_l2(cpu->cach);
-  char* l3 = get_str_l3(cpu->cach);
+  char* l1i = get_str_l1i(cpu->cpu_cache);
+  char* l1d = get_str_l1d(cpu->cpu_cache);
+  char* l2 = get_str_l2(cpu->cpu_cache);
+  char* l3 = get_str_l3(cpu->cpu_cache);
   char* pp = get_str_peak_performance(cpu->peak_performance);
 
   // Step 2. Set attributes
@@ -790,10 +790,10 @@ bool print_cpufetch_arm(struct cpuInfo* cpu, STYLE s, struct color** cs, struct 
     char* max_frequency = get_str_freq(cpu->freq);
     char* n_cores = get_str_topology(cpu, cpu->topo, false);
     /*
-     * char* l1i = get_str_l1i(cpu->cach);
-     * char* l1d = get_str_l1d(cpu->cach);
-     * char* l2 = get_str_l2(cpu->cach);
-     * char* l3 = get_str_l3(cpu->cach);
+     * char* l1i = get_str_l1i(cpu->cpu_cache);
+     * char* l1d = get_str_l1d(cpu->cpu_cache);
+     * char* l2 = get_str_l2(cpu->cpu_cache);
+     * char* l3 = get_str_l3(cpu->cpu_cache);
      * Do not setAttribute for caches.
      * Cache functionality may be implemented
      * in the future
@@ -813,10 +813,10 @@ bool print_cpufetch_arm(struct cpuInfo* cpu, STYLE s, struct color** cs, struct 
       char* max_frequency = get_str_freq(ptr->freq);
       char* n_cores = get_str_topology(ptr, ptr->topo, false);
       /*
-       * char* l1i = get_str_l1i(cpu->cach);
-       * char* l1d = get_str_l1d(cpu->cach);
-       * char* l2 = get_str_l2(cpu->cach);
-       * char* l3 = get_str_l3(cpu->cach);
+       * char* l1i = get_str_l1i(cpu->cpu_cache);
+       * char* l1d = get_str_l1d(cpu->cpu_cache);
+       * char* l2 = get_str_l2(cpu->cpu_cache);
+       * char* l3 = get_str_l3(cpu->cpu_cache);
        * Do not setAttribute for caches.
        * Cache functionality may be implemented
        * in the future
@@ -865,7 +865,7 @@ bool print_cpufetch_arm(struct cpuInfo* cpu, STYLE s, struct color** cs, struct 
   free(art);
 
   if(cs != NULL) free_colors_struct(cs);
-  free_cache_struct(cpu->cach);
+  free_cache_struct(cpu->cpu_cache);
   free_topo_struct(cpu->topo);
   free_cpuinfo_struct(cpu);
 

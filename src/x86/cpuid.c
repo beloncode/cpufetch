@@ -280,7 +280,7 @@ struct cpuInfo* get_cpu_info() {
   cpu->feat = feat;
   cpu->peak_performance = -1;
   cpu->topo = NULL;
-  cpu->cach = NULL;
+  cpu->cpu_cache = NULL;
 
   bool *ptr = &(feat->AES);
   for(uint32_t i = 0; i < sizeof(struct features)/sizeof(bool); i++, ptr++) {
@@ -391,14 +391,14 @@ struct cpuInfo* get_cpu_info() {
 
   // If any field of the struct is NULL,
   // return inmideately, as further functions
-  // require valid fields (cach, topo, etc)
+  // require valid fields (cpu_cache, topo, etc)
   cpu->arch = get_cpu_uarch(cpu);
   cpu->freq = get_frequency_info(cpu);
 
-  cpu->cach = get_cache_info(cpu);
-  if(cpu->cach == NULL) return cpu;
+  cpu->cpu_cache = get_cache_info(cpu);
+  if(cpu->cpu_cache == NULL) return cpu;
 
-  cpu->topo = get_topology_info(cpu, cpu->cach);
+  cpu->topo = get_topology_info(cpu, cpu->cpu_cache);
   if(cpu->topo == NULL) return cpu;
 
   cpu->peak_performance = get_peak_performance(cpu, cpu->topo, get_freq(cpu->freq), accurate_pp());
@@ -431,7 +431,7 @@ bool get_cache_topology_amd(struct cpuInfo* cpu, struct topology* topo) {
               printBug("Found data cache at level %d (expected 1)", cache_level);
               return false;
             }
-            topo->cach->L1d->num_caches = topo->logical_cores / num_sharing_cache;
+            topo->cpu_cache->L1d->num_caches = topo->logical_cores / num_sharing_cache;
             break;
 
           case 2: // Instruction Cache (We assume this is L1i)
@@ -439,15 +439,15 @@ bool get_cache_topology_amd(struct cpuInfo* cpu, struct topology* topo) {
               printBug("Found instruction cache at level %d (expected 1)", cache_level);
               return false;
             }
-            topo->cach->L1i->num_caches = topo->logical_cores / num_sharing_cache;
+            topo->cpu_cache->L1i->num_caches = topo->logical_cores / num_sharing_cache;
             break;
 
           case 3: // Unified Cache (This may be L2 or L3)
             if(cache_level == 2) {
-              topo->cach->L2->num_caches = topo->logical_cores / num_sharing_cache;
+              topo->cpu_cache->L2->num_caches = topo->logical_cores / num_sharing_cache;
             }
             else if(cache_level == 3) {
-              topo->cach->L3->num_caches = topo->logical_cores / num_sharing_cache;
+              topo->cpu_cache->L3->num_caches = topo->logical_cores / num_sharing_cache;
             }
             else {
               printWarn("Found unknown unified cache at level %d", cache_level);
@@ -465,15 +465,15 @@ bool get_cache_topology_amd(struct cpuInfo* cpu, struct topology* topo) {
   }
   else {
     printWarn("Can't read topology information from cpuid (needed extended level is 0x%.8X, max is 0x%.8X and topology_extensions=%s). Guessing cache topology", 0x8000001D, cpu->maxExtendedLevels, cpu->topology_extensions ? "true" : "false");
-    topo->cach->L1i->num_caches = topo->physical_cores;
-    topo->cach->L1d->num_caches = topo->physical_cores;
+    topo->cpu_cache->L1i->num_caches = topo->physical_cores;
+    topo->cpu_cache->L1d->num_caches = topo->physical_cores;
 
-    if(topo->cach->L3->exists) {
-      topo->cach->L2->num_caches = topo->physical_cores;
-      topo->cach->L3->num_caches = 1;
+    if(topo->cpu_cache->L3->exists) {
+      topo->cpu_cache->L2->num_caches = topo->physical_cores;
+      topo->cpu_cache->L3->num_caches = 1;
     }
     else {
-      topo->cach->L2->num_caches = 1;
+      topo->cpu_cache->L2->num_caches = 1;
     }
   }
 
@@ -492,9 +492,9 @@ void get_topology_from_udev(struct topology* topo) {
 
 // Main reference: https://software.intel.com/content/www/us/en/develop/articles/intel-64-architecture-processor-topology-enumeration.html
 // Very interesting resource: https://wiki.osdev.org/Detecting_CPU_Topology_(80x86)
-struct topology* get_topology_info(struct cpuInfo* cpu, struct cache* cach) {
+struct topology* get_topology_info(struct cpuInfo* cpu, struct cache* cpu_cache) {
   struct topology* topo = emalloc(sizeof(struct topology));
-  init_topology_struct(topo, cach);
+  init_topology_struct(topo, cpu_cache);
 
   uint32_t eax = 0;
   uint32_t ebx = 0;
@@ -593,36 +593,36 @@ struct topology* get_topology_info(struct cpuInfo* cpu, struct cache* cach) {
   return topo;
 }
 
-struct cache* get_cache_info_amd_fallback(struct cache* cach) {
+struct cache* get_cache_info_amd_fallback(struct cache* cpu_cache) {
   uint32_t eax = 0x80000005;
   uint32_t ebx = 0;
   uint32_t ecx = 0;
   uint32_t edx = 0;
   cpuid(&eax, &ebx, &ecx, &edx);
 
-  cach->L1d->size = (ecx >> 24) * 1024;
-  cach->L1i->size = (edx >> 24) * 1024;
+  cpu_cache->L1d->size = (ecx >> 24) * 1024;
+  cpu_cache->L1i->size = (edx >> 24) * 1024;
 
   eax = 0x80000006;
   cpuid(&eax, &ebx, &ecx, &edx);
 
-  cach->L2->size = (ecx >> 16) * 1024;
-  cach->L3->size = (edx >> 18) * 512 * 1024;
+  cpu_cache->L2->size = (ecx >> 16) * 1024;
+  cpu_cache->L3->size = (edx >> 18) * 512 * 1024;
 
-  cach->L1i->exists = cach->L1i->size > 0;
-  cach->L1d->exists = cach->L1d->size > 0;
-  cach->L2->exists = cach->L2->size > 0;
-  cach->L3->exists = cach->L3->size > 0;
+  cpu_cache->L1i->exists = cpu_cache->L1i->size > 0;
+  cpu_cache->L1d->exists = cpu_cache->L1d->size > 0;
+  cpu_cache->L2->exists = cpu_cache->L2->size > 0;
+  cpu_cache->L3->exists = cpu_cache->L3->size > 0;
 
-  if(cach->L3->exists)
-   cach->max_cache_level = 4;
+  if(cpu_cache->L3->exists)
+   cpu_cache->max_cache_level = 4;
   else
-   cach->max_cache_level = 3;
+   cpu_cache->max_cache_level = 3;
 
-  return cach;
+  return cpu_cache;
 }
 
-struct cache* get_cache_info_general(struct cache* cach, uint32_t level) {
+struct cache* get_cache_info_general(struct cache* cpu_cache, uint32_t level) {
   uint32_t eax = 0;
   uint32_t ebx = 0;
   uint32_t ecx = 0;
@@ -649,7 +649,7 @@ struct cache* get_cache_info_general(struct cache* cach, uint32_t level) {
       uint32_t cache_ways_of_associativity = ((ebx >>= 10) & 0x3FF) + 1;
 
       int32_t cache_total_size = cache_ways_of_associativity * cache_physical_line_partitions * cache_coherency_line_size * cache_sets;
-      cach->max_cache_level++;
+      cpu_cache->max_cache_level++;
 
       switch (cache_type) {
         case 1: // Data Cache (We assume this is L1d)
@@ -657,8 +657,8 @@ struct cache* get_cache_info_general(struct cache* cach, uint32_t level) {
             printBug("Found data cache at level %d (expected 1)", cache_level);
             return NULL;
           }
-          cach->L1d->size = cache_total_size;
-          cach->L1d->exists = true;
+          cpu_cache->L1d->size = cache_total_size;
+          cpu_cache->L1d->exists = true;
           break;
 
         case 2: // Instruction Cache (We assume this is L1i)
@@ -666,22 +666,22 @@ struct cache* get_cache_info_general(struct cache* cach, uint32_t level) {
             printBug("Found instruction cache at level %d (expected 1)", cache_level);
             return NULL;
           }
-          cach->L1i->size = cache_total_size;
-          cach->L1i->exists = true;
+          cpu_cache->L1i->size = cache_total_size;
+          cpu_cache->L1i->exists = true;
           break;
 
         case 3: // Unified Cache (This may be L2 or L3)
           if(cache_level == 2) {
-            cach->L2->size = cache_total_size;
-            cach->L2->exists = true;
+            cpu_cache->L2->size = cache_total_size;
+            cpu_cache->L2->exists = true;
           }
           else if(cache_level == 3) {
-            cach->L3->size = cache_total_size;
-            cach->L3->exists = true;
+            cpu_cache->L3->size = cache_total_size;
+            cpu_cache->L3->exists = true;
           }
           else {
             printWarn("Found unknown unified cache at level %d (size is %d bytes)", cache_level, cache_total_size);
-            cach->max_cache_level--;
+            cpu_cache->max_cache_level--;
           }
           break;
 
@@ -694,12 +694,12 @@ struct cache* get_cache_info_general(struct cache* cach, uint32_t level) {
     i++;
   } while (cache_type > 0);
 
-  return cach;
+  return cpu_cache;
 }
 
 struct cache* get_cache_info(struct cpuInfo* cpu) {
-  struct cache* cach = emalloc(sizeof(struct cache));
-  init_cache_struct(cach);
+  struct cache* cpu_cache = emalloc(sizeof(struct cache));
+  init_cache_struct(cpu_cache);
 
   uint32_t level;
 
@@ -713,7 +713,7 @@ struct cache* get_cache_info(struct cpuInfo* cpu) {
       return NULL;
     }
     else {
-      cach = get_cache_info_general(cach, level);
+      cpu_cache = get_cache_info_general(cpu_cache, level);
     }
   }
   else {
@@ -726,14 +726,14 @@ struct cache* get_cache_info(struct cpuInfo* cpu) {
         return NULL;
       }
       printWarn("Fallback to old method using 0x%.8X and 0x%.8X", level-1, level);
-      cach = get_cache_info_amd_fallback(cach);
+      cpu_cache = get_cache_info_amd_fallback(cpu_cache);
     }
     else {
-      cach = get_cache_info_general(cach, level);
+      cpu_cache = get_cache_info_general(cpu_cache, level);
     }
   }
 
-  return cach;
+  return cpu_cache;
 }
 
 struct frequency* get_frequency_info(struct cpuInfo* cpu) {
@@ -946,7 +946,7 @@ void print_raw(struct cpuInfo* cpu) {
 
     for(uint32_t reg=0x00000000; reg <= cpu->maxLevels; reg++) {
       if(reg == 0x00000004) {
-        for(uint32_t reg2=0x00000000; reg2 < cpu->cach->max_cache_level; reg2++) {
+        for(uint32_t reg2=0x00000000; reg2 < cpu->cpu_cache->max_cache_level; reg2++) {
           eax = reg;
           ebx = 0;
           ecx = reg2;
@@ -982,7 +982,7 @@ void print_raw(struct cpuInfo* cpu) {
     }
     for(uint32_t reg=0x80000000; reg <= cpu->maxExtendedLevels; reg++) {
       if(reg == 0x8000001D) {
-        for(uint32_t reg2=0x00000000; reg2 < cpu->cach->max_cache_level; reg2++) {
+        for(uint32_t reg2=0x00000000; reg2 < cpu->cpu_cache->max_cache_level; reg2++) {
           eax = reg;
           ebx = 0;
           ecx = reg2;
