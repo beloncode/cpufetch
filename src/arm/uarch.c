@@ -254,7 +254,7 @@ struct uarch* get_uarch_from_midr(uint32_t midr, struct cpuInfo* cpu) {
   CHECK_UARCH(arch, cpu, 'C', 0x0A3, NA, NA, "ThunderX 81XX",         UARCH_THUNDERX,     CPU_VENDOR_CAVIUM)
   CHECK_UARCH(arch, cpu, 'C', 0x0AF, NA, NA, "ThunderX2 99XX",        UARCH_THUNDERX2,    CPU_VENDOR_CAVIUM)
 
-  CHECK_UARCH(arch, cpu, 'H', 0xD01, NA, NA, "TaiShan v110",          UARCH_TAISHAN_V110, CPU_VENDOR_HUAWUEI) // Kunpeng 920 series
+  CHECK_UARCH(arch, cpu, 'H', 0xD01, NA, NA, "TaiShan v110",          UARCH_TAISHAN_V110, CPU_VENDOR_HUAWEI) // Kunpeng 920 series
   CHECK_UARCH(arch, cpu, 'H', 0xD40, NA, NA, "Cortex-A76",            UARCH_CORTEX_A76,   CPU_VENDOR_ARM)     // Kirin 980 Big/Medium cores -> Cortex-A76
 
   CHECK_UARCH(arch, cpu, 'N', 0x000, NA, NA, "Denver",                UARCH_DENVER,       CPU_VENDOR_NVIDIA)

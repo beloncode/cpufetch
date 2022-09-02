@@ -205,11 +205,11 @@ void init_cache_struct(struct cache* cpu_cache) {
   cpu_cache->L2 = emalloc(sizeof(struct cpu_cache));
   cpu_cache->L3 = emalloc(sizeof(struct cpu_cache));
 
-  cpu_cache->cach_arr = emalloc(sizeof(struct cpu_cache*) * 4);
-  cpu_cache->cach_arr[0] = cpu_cache->L1i;
-  cpu_cache->cach_arr[1] = cpu_cache->L1d;
-  cpu_cache->cach_arr[2] = cpu_cache->L2;
-  cpu_cache->cach_arr[3] = cpu_cache->L3;
+  cpu_cache->arrary = emalloc(sizeof(struct cpu_cache*) * 4);
+  cpu_cache->arrary[0] = cpu_cache->L1i;
+  cpu_cache->arrary[1] = cpu_cache->L1d;
+  cpu_cache->arrary[2] = cpu_cache->L2;
+  cpu_cache->arrary[3] = cpu_cache->L3;
 
   cpu_cache->max_cache_level = 0;
   cpu_cache->L1i->exists = false;
@@ -219,8 +219,8 @@ void init_cache_struct(struct cache* cpu_cache) {
 }
 
 void free_cache_struct(struct cache* cpu_cache) {
-  for(int i=0; i < 4; i++) free(cpu_cache->cach_arr[i]);
-  free(cpu_cache->cach_arr);
+  for(int i=0; i < 4; i++) free(cpu_cache->arrary[i]);
+  free(cpu_cache->arrary);
   free(cpu_cache);
 }
 

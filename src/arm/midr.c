@@ -28,9 +28,9 @@ struct cache* get_cache_info(struct cpuInfo* cpu) {
 
   cpu_cache->max_cache_level = 2;
   for(int i=0; i < cpu_cache->max_cache_level + 1; i++) {
-    cpu_cache->cach_arr[i]->exists = true;
-    cpu_cache->cach_arr[i]->num_caches = 1;
-    cpu_cache->cach_arr[i]->size = 0;
+    cpu_cache->arrary[i]->exists = true;
+    cpu_cache->arrary[i]->num_caches = 1;
+    cpu_cache->arrary[i]->size = 0;
   }
 
   return cpu_cache;

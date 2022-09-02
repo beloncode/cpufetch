@@ -245,7 +245,7 @@ bool build_topo_from_apic(uint32_t* apic_pkg, uint32_t* apic_smt, uint32_t** cac
       if(apic_id[c] > 0) num_caches++;
     }
 
-    topo->cpu_cache->cach_arr[i]->num_caches = num_caches;
+    topo->cpu_cache->arrary[i]->num_caches = num_caches;
   }
 
   free(sockets);
@@ -331,7 +331,7 @@ bool fill_apic_ids(uint32_t* apic_ids, int n, bool x2apic_id) {
   }
 
   #ifdef __linux__
-  // With the original mask previosly retrieved, we reset the affinity
+  // With the original mask previously retrieved, we reset the affinity
   if (sched_setaffinity (0, sizeof(original_mask), &original_mask) == -1) {
     printWarn("sched_setaffinity: %s", strerror(errno));
     return false;

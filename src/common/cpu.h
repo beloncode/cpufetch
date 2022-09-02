@@ -16,7 +16,7 @@ enum {
   CPU_VENDOR_NVIDIA,
   CPU_VENDOR_APM,
   CPU_VENDOR_QUALCOMM,
-  CPU_VENDOR_HUAWUEI,
+  CPU_VENDOR_HUAWEI,
   CPU_VENDOR_SAMSUNG,
   CPU_VENDOR_MARVELL,
   CPU_VENDOR_PHYTIUM,
@@ -63,7 +63,7 @@ struct cache {
   struct cpu_cache* L1d;
   struct cpu_cache* L2;
   struct cpu_cache* L3;
-  struct cpu_cache** cach_arr;
+  struct cpu_cache** arrary;
 
   uint8_t max_cache_level;
 };
