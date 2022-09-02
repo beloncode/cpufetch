@@ -21,8 +21,8 @@
 #define STRING_YES        "Yes"
 #define STRING_NO         "No"
 #define STRING_NONE       "None"
-#define STRING_MEGAHERZ   "MHz"
-#define STRING_GIGAHERZ   "GHz"
+#define STRING_MEGAHERTZ  "MHz"
+#define STRING_GIGAHERTZ  "GHz"
 #define STRING_KILOBYTES  "KB"
 #define STRING_MEGABYTES  "MB"
 
@@ -153,9 +153,9 @@ char* get_str_freq(struct frequency* freq) {
   if(freq->max == UNKNOWN_DATA || freq->max < 0)
     snprintf(string,strlen(STRING_UNKNOWN)+1,STRING_UNKNOWN);
   else if(freq->max >= 1000)
-    snprintf(string,size,"%.3f "STRING_GIGAHERZ,(float)(freq->max)/1000);
+    snprintf(string,size,"%.3f "STRING_GIGAHERTZ,(float)(freq->max)/1000);
   else
-    snprintf(string,size,"%d "STRING_MEGAHERZ,freq->max);
+    snprintf(string,size,"%d "STRING_MEGAHERTZ,freq->max);
 
   return string;
 }
