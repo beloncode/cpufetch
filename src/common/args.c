@@ -13,7 +13,7 @@
 #define COLOR_STR_IBM       "ibm"
 #define COLOR_STR_ARM       "arm"
 
-static const char *SYTLES_STR_LIST[] = {
+static const char *STYLES_STR_LIST[] = {
   [STYLE_EMPTY]   = NULL,
   [STYLE_FANCY]   = "fancy",
   [STYLE_RETRO]   = "retro",
@@ -134,9 +134,9 @@ int max_arg_str_length() {
 
 STYLE parse_style(char* style) {
   uint8_t i = 0;
-  uint8_t styles_count = sizeof(SYTLES_STR_LIST) / sizeof(SYTLES_STR_LIST[0]);
+  uint8_t styles_count = sizeof(STYLES_STR_LIST) / sizeof(STYLES_STR_LIST[0]);
 
-  while(i != styles_count && (SYTLES_STR_LIST[i] == NULL || strcmp(SYTLES_STR_LIST[i], style) != 0))
+  while(i != styles_count && (STYLES_STR_LIST[i] == NULL || strcmp(STYLES_STR_LIST[i], style) != 0))
     i++;
 
   if(i == styles_count)

@@ -403,7 +403,7 @@ bool get_topology_from_apic(struct cpuInfo* cpu, struct topology* topo) {
 
   /* DEBUG
   for(int i=0; i < topo->cpu_cache->max_cache_level; i++) {
-    printf("[cpu_cache %1d]", i);
+    printf("[CACHE %1d]", i);
     for(int j=0; j < topo->total_cores; j++)
       printf("[%03d]", cache_id_apic[j][i]);
     printf("\n");
